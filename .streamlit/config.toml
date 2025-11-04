@@ -1,0 +1,63 @@
+[theme]
+# Primary accent color for interactive elements
+primaryColor = "#007bff"
+
+# Background color for the main content area
+backgroundColor = "#ffffff"
+
+# Background color for sidebar and most interactive widgets
+secondaryBackgroundColor = "#f8f9fa"
+
+# Color used for almost all text
+textColor = "#000000"
+
+# Font family for all text in the app, except code blocks
+# Accepted values: "sans serif", "serif", "monospace"
+font = "sans serif"
+
+[server]
+# Max size, in megabytes, for files uploaded with the file_uploader.
+# Default: 200
+maxUploadSize = 200
+
+# Max size, in megabytes, of messages that can be sent via the WebSocket connection.
+# Default: 200
+maxMessageSize = 200
+
+# Enable CORS for websockets
+enableCORS = false
+
+[logger]
+# Level of logging: 'error', 'warning', 'info', or 'debug'
+# Default: 'info'
+level = "info"
+
+# String format for logging messages. If unset, this defaults to:
+# "%(asctime)s %(name)s - %(levelname)s - %(message)s"
+messageFormat = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+[client]
+# Whether st.set_page_config(page_title="My Title", layout="wide") should be applied automatically for all pages.
+# Default: false
+showErrorDetails = false
+
+# Change the visibility of some Streamlit widgets.
+# "collapsed" - Show collapsed arrows for expanders.
+# "expanded" - Show fully expanded expanders.
+# "hidden" - Hide expanders entirely.
+# Default: "visible"
+toolbarMode = "visible"
+
+[browser]
+# Internet address where users should point their browsers in order to connect to this app.
+# Can be IP address or DNS name and path.
+# This is used to:
+# - Set the correct URL for CORS requests.
+# - Show the correct URL on the terminal.
+# - Open the browser.
+# Default: "localhost"
+gatherUsageStats = false
+
+[deprecation]
+# 'showPyplotGlobalUse': Whether to show the warning when a user calls st.pyplot() without first calling st.pyplot(). Default: "true"
+showPyplotGlobalUse = false
