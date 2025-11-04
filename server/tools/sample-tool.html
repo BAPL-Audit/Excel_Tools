@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Audit Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .tool-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Sample Audit Tool</h1>
+
+        <div class="tool-info">
+            <h3>About this tool</h3>
+            <p>This is a sample audit tool demonstrating the HTML tool integration system.
+            In a production environment, this would be replaced with actual audit functionality
+            like SSL checking, port scanning, or hash generation.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="inputText">Enter text to analyze:</label>
+            <textarea id="inputText" rows="4" placeholder="Enter your text here for analysis..."></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="analysisType">Analysis Type:</label>
+            <select id="analysisType" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="length">Text Length</option>
+                <option value="words">Word Count</option>
+                <option value="uppercase">Uppercase Check</option>
+                <option value="hash">Simple Hash</option>
+            </select>
+        </div>
+
+        <button onclick="analyzeText()">Analyze Text</button>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>Analysis Result:</h3>
+            <p id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        function analyzeText() {
+            const inputText = document.getElementById('inputText').value;
+            const analysisType = document.getElementById('analysisType').value;
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+
+            if (!inputText.trim()) {
+                alert('Please enter some text to analyze');
+                return;
+            }
+
+            let result = '';
+
+            switch(analysisType) {
+                case 'length':
+                    result = `Text length: ${inputText.length} characters`;
+                    break;
+                case 'words':
+                    const words = inputText.trim().split(/\s+/);
+                    result = `Word count: ${words.length} words`;
+                    break;
+                case 'uppercase':
+                    const uppercaseCount = (inputText.match(/[A-Z]/g) || []).length;
+                    result = `Uppercase letters: ${uppercaseCount}`;
+                    break;
+                case 'hash':
+                    let hash = 0;
+                    for (let i = 0; i < inputText.length; i++) {
+                        const char = inputText.charCodeAt(i);
+                        hash = ((hash << 5) - hash) + char;
+                        hash = hash & hash; // Convert to 32-bit integer
+                    }
+                    result = `Simple hash: ${hash}`;
+                    break;
+                default:
+                    result = 'Unknown analysis type';
+            }
+
+            resultText.textContent = result;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
