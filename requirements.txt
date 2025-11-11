@@ -25,6 +25,9 @@ cryptography>=41.0.0
 # Additional utilities
 python-dateutil>=2.8.0
 
+# HTTP Client for LongCat API
+requests>=2.31.0
+
 # For enhanced features
 plotly>=5.15.0  # For interactive charts
 altair>=5.1.0   # For data visualization
