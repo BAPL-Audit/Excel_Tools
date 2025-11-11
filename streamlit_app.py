@@ -1071,6 +1071,8 @@ if 'selected_tool' in st.session_state and st.session_state.selected_tool:
     tool = st.session_state.selected_tool
     if tool[1] == "TDS Challan Extractor":
         tds_challan_extractor_page()
+    elif tool[1] == "AI Excel Analyzer":
+        ai_excel_analyzer_page()
     else:
         st.markdown(f'<div class="main-header"><h1>{tool[4]} {tool[1]}</h1><p>{tool[2]}</p></div>', unsafe_allow_html=True)
         st.info("This tool is being prepared for launch. For now, please use the TDS Challan Extractor above.")
