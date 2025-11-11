@@ -673,6 +673,282 @@ def tds_challan_extractor_page():
         - TAN and Assessment Year
         """)
 
+def ai_excel_analyzer_page():
+    st.markdown('<div class="main-header"><h1>📊 AI Excel Analyzer</h1><p style="color: var(--text-secondary);">Intelligent Excel data analysis with LongCat AI and Indian taxation insights</p></div>', unsafe_allow_html=True)
+
+    # File upload section
+    st.markdown('<h3>📁 Upload Excel File</h3>', unsafe_allow_html=True)
+
+    # File upload with validation
+    st.markdown('<div class="upload-area">', unsafe_allow_html=True)
+    uploaded_file = st.file_uploader(
+        "Upload your Excel file",
+        type=["xlsx", "xls"],
+        key="excel_file_upload",
+        help="Supported formats: .xlsx, .xls | Maximum size: 10MB"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Session state for file data
+    if 'excel_data' not in st.session_state:
+        st.session_state.excel_data = None
+    if 'excel_filename' not in st.session_state:
+        st.session_state.excel_filename = None
+
+    # Process uploaded file
+    if uploaded_file is not None:
+        # File validation
+        if uploaded_file.size > 10 * 1024 * 1024:  # 10MB limit
+            st.error("File size exceeds 10MB limit")
+            return
+
+        try:
+            # Read Excel file
+            df = pd.read_excel(uploaded_file)
+
+            # Validate data
+            if df.empty:
+                st.error("The Excel file appears to be empty or has no readable data.")
+                return
+
+            # Store in session state
+            st.session_state.excel_data = df
+            st.session_state.excel_filename = uploaded_file.name
+
+            # Display file info
+            st.success(f"✅ File loaded successfully: {uploaded_file.name}")
+            st.info(f"📊 {len(df)} rows, {len(df.columns)} columns")
+
+            # Display data preview
+            st.markdown('<h3>📋 Data Preview</h3>', unsafe_allow_html=True)
+            st.markdown('<div class="data-table">', unsafe_allow_html=True)
+            st.dataframe(df.head(10), use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # Column information
+            with st.expander("📊 Column Information"):
+                col_info = []
+                for col in df.columns:
+                    dtype = str(df[col].dtype)
+                    non_null = df[col].count()
+                    null_count = len(df) - non_null
+                    unique_count = df[col].nunique()
+
+                    col_info.append({
+                        'Column': col,
+                        'Data Type': dtype,
+                        'Non-Null Values': non_null,
+                        'Null Values': null_count,
+                        'Unique Values': unique_count
+                    })
+
+                col_df = pd.DataFrame(col_info)
+                st.dataframe(col_df, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Error reading Excel file: {str(e)}")
+            return
+
+    # Query section
+    if st.session_state.excel_data is not None:
+        st.markdown('<h3>💬 Ask About Your Data</h3>', unsafe_allow_html=True)
+
+        # Query input with examples
+        query_examples = [
+            "What are the total expenses by category?",
+            "Which expenses are tax-deductible under Indian law?",
+            "Show me the top 5 highest values in the Amount column",
+            "Analyze the payment patterns and identify any anomalies",
+            "What are the compliance considerations for this data?"
+        ]
+
+        query = st.text_area(
+            "Enter your question about the Excel data:",
+            placeholder=f"Example: {query_examples[0]}",
+            height=100,
+            key="excel_query"
+        )
+
+        # Show examples in expander
+        with st.expander("💡 Example Questions"):
+            for example in query_examples:
+                st.write(f"• {example}")
+
+        # Analysis button
+        if st.button("🔍 Analyze with LongCat AI", use_container_width=True, key="analyze_excel"):
+            if not query or not query.strip():
+                st.error("Please enter a question about your Excel data")
+                return
+
+            if len(query) > 1000:
+                st.error("Question is too long. Please keep it under 1000 characters.")
+                return
+
+            # Prepare data for analysis
+            df = st.session_state.excel_data
+            sample_data = df.head(10).to_string(index=False)
+
+            # Create summary statistics
+            summary_stats = {
+                'total_rows': len(df),
+                'total_columns': len(df.columns),
+                'columns': list(df.columns),
+                'data_types': {col: str(dtype) for col, dtype in df.dtypes.items()},
+                'numeric_columns': list(df.select_dtypes(include=['number']).columns),
+                'text_columns': list(df.select_dtypes(include=['object']).columns)
+            }
+
+            # Construct the prompt for LongCat AI
+            prompt = f"""
+            You are a chartered accountant AI assistant specializing in data analysis and Indian taxation.
+            Analyze the provided Excel data and answer the user's question with professional expertise.
+            Reference relevant Indian Income Tax sections and Ind AS (Indian Accounting Standards) where applicable.
+            Provide actionable insights and recommendations for tax optimization and compliance.
+
+            Excel Data Context:
+            - File: {st.session_state.excel_filename}
+            - Columns: {', '.join(summary_stats['columns'])}
+            - Data Types: {summary_stats['data_types']}
+            - Sample data (first 10 rows):
+            {sample_data}
+
+            Summary Statistics:
+            - Total Rows: {summary_stats['total_rows']}
+            - Total Columns: {summary_stats['total_columns']}
+            - Numeric Columns: {', '.join(summary_stats['numeric_columns'])}
+            - Text Columns: {', '.join(summary_stats['text_columns'])}
+
+            User Question: {query}
+
+            Please provide:
+            1. Direct answer to the user's question
+            2. Relevant Indian tax sections (if applicable)
+            3. Ind AS references (for accounting matters)
+            4. Practical recommendations
+            5. Risk considerations or compliance notes
+            """
+
+            # Show loading state
+            with st.spinner("🤖 Analyzing with LongCat AI... This may take a moment."):
+                try:
+                    # Get AI response
+                    ai_response = longcat_chat(prompt)
+
+                    # Display results
+                    st.markdown('<h3>🧠 AI Analysis Results</h3>', unsafe_allow_html=True)
+                    st.markdown('<div class="tool-card">', unsafe_allow_html=True)
+                    st.write(ai_response)
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    # Export options
+                    st.markdown('<h3>💾 Export Options</h3>', unsafe_allow_html=True)
+
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        # Download data as CSV
+                        csv = df.to_csv(index=False)
+                        st.download_button(
+                            label="📥 Download Excel Data (CSV)",
+                            data=csv,
+                            file_name=f"excel_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+
+                    with col2:
+                        # Download AI analysis
+                        analysis_text = f"""
+                        AI Excel Analysis Report
+                        ========================
+
+                        File: {st.session_state.excel_filename}
+                        Query: {query}
+                        Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+                        AI Response:
+                        {ai_response}
+                        """
+                        st.download_button(
+                            label="📄 Download Analysis Report",
+                            data=analysis_text,
+                            file_name=f"analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                            mime="text/plain"
+                        )
+
+                    with col3:
+                        # Save to projects
+                        if st.button("💾 Save to Projects", key="save_analysis"):
+                            project_data = {
+                                'file_name': st.session_state.excel_filename,
+                                'query': query,
+                                'response': ai_response,
+                                'data_summary': summary_stats,
+                                'sample_data': sample_data,
+                                'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            }
+
+                            try:
+                                # Get tool ID for AI Excel Analyzer (assuming it's the second tool)
+                                conn = sqlite3.connect('audit_tools.db')
+                                c = conn.cursor()
+                                c.execute("SELECT id FROM tools WHERE name = 'AI Excel Analyzer'")
+                                tool_result = c.fetchone()
+                                tool_id = tool_result[0] if tool_result else 2
+                                conn.close()
+
+                                project_id = save_project(
+                                    st.session_state.user_id,
+                                    tool_id,
+                                    f"Excel Analysis - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                                    f"Analyzed {st.session_state.excel_filename} with query: {query[:100]}...",
+                                    project_data
+                                )
+                                st.success(f"✅ Saved to projects with ID: {project_id}")
+                            except Exception as e:
+                                st.error(f"Error saving to projects: {str(e)}")
+
+                except LongCatAPIError as e:
+                    st.error(f"AI Service Error: {str(e)}")
+                    st.info("Please try again in a few moments. If the problem persists, contact the administrator.")
+                except Exception as e:
+                    st.error(f"Unexpected error: {str(e)}")
+                    st.info("Please try again. If the problem continues, contact support.")
+
+    else:
+        # Instructions when no file is uploaded
+        st.markdown('<div class="tool-card" style="text-align: center;">', unsafe_allow_html=True)
+        st.markdown('<h3>📊 How to Use AI Excel Analyzer</h3>', unsafe_allow_html=True)
+        st.markdown('''
+        <div style="text-align: left; margin-top: 1rem;">
+        <h4>📋 Steps:</h4>
+        <ol>
+            <li><strong>Upload Excel File:</strong> Click the upload area above and select your Excel file (.xlsx or .xls)</li>
+            <li><strong>Review Data:</strong> Check the data preview to ensure your file loaded correctly</li>
+            <li><strong>Ask Questions:</strong> Type your question about the data in the query box</li>
+            <li><strong>Get Analysis:</strong> Click "Analyze with LongCat AI" to get professional insights</li>
+            <li><strong>Export Results:</strong> Download data, analysis reports, or save to projects</li>
+        </ol>
+
+        <h4>💡 Example Questions:</h4>
+        <ul>
+            <li>"What are the total expenses by category?"</li>
+            <li>"Which expenses are tax-deductible under Indian law?"</li>
+            <li>"Analyze payment patterns and identify anomalies"</li>
+            <li>"What are the compliance considerations for this data?"</li>
+        </ul>
+
+        <h4>🏛️ Expertise Areas:</h4>
+        <ul>
+            <li>Indian Income Tax Act sections and compliance</li>
+            <li>Ind AS (Indian Accounting Standards)</li>
+            <li>Tax deduction and optimization strategies</li>
+            <li>Financial data analysis and reporting</li>
+            <li>Risk assessment and compliance requirements</li>
+        </ul>
+        </div>
+        ''', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
 def projects_page():
     st.markdown('<div class="main-header"><h1>📁 Your Projects</h1><p style="color: var(--text-secondary);">Manage your audit projects and results</p></div>', unsafe_allow_html=True)
 
