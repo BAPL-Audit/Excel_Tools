@@ -10,6 +10,7 @@ from PIL import Image
 import io
 import json
 from pathlib import Path
+from longcat_api import longcat_chat, LongCatAPIError
 
 # Set page configuration
 st.set_page_config(
