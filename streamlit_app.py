@@ -261,6 +261,7 @@ def init_db():
     if c.fetchone()[0] == 0:
         default_tools = [
             ("TDS Challan Extractor", "Extract financial data from TDS challan PDFs", "data", "📄", None, "tds_challan_extractor.html", "integrated"),
+            ("AI Excel Analyzer", "Intelligent Excel data analysis with LongCat AI and Indian tax insights", "data", "📊", None, "ai_excel_analyzer.html", "integrated"),
             ("Sample Text Analyzer", "Analyze text for character count, words, etc.", "data", "📝", None, "sample_tool.html", "iframe"),
             ("Hash Generator", "Generate various hash types for files and text", "crypto", "#️⃣", None, "sample_tool.html", "iframe"),
             ("SSL Checker", "Check SSL certificate validity and configuration", "security", "🔒", None, "sample_tool.html", "iframe"),
